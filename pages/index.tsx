@@ -36,6 +36,7 @@ export default function Home() {
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
           className="border p-2 rounded w-full"
+          title="Transaction type"
         >
           <option value="income">Income</option>
           <option value="expense">Expense</option>
