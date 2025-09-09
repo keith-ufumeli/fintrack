@@ -55,6 +55,9 @@ export default function TransactionsPage() {
       if (response.ok) {
         const data = await response.json();
         return data.token;
+      } else {
+        const errorData = await response.json();
+        console.error('JWT token error:', errorData);
       }
     } catch (error) {
       console.error('Error getting JWT token:', error);
@@ -85,6 +88,7 @@ export default function TransactionsPage() {
         const headers = await getAuthHeaders();
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
           headers,
+          cache: 'no-cache',
         });
         
         if (!response.ok) {

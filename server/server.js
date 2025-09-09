@@ -9,6 +9,7 @@ import connectDB from "./config/db.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import loanRoutes from "./routes/loanRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
 
 // For ES modules __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
@@ -210,6 +211,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, {
 }));
 
 // Routes
+app.use("/api/test", testRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/loans", loanRoutes);

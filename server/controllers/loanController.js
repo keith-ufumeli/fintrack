@@ -3,9 +3,19 @@ import Loan from "../models/Loan.js";
 export const getLoans = async (req, res) => {
   try {
     const userId = req.userId; // From auth middleware
-    const loans = await Loan.find({ user: userId }).sort({ date: -1 });
-    res.json(loans);
+    console.log('Getting loans for user:', userId);
+    
+    // First, let's see what loans exist
+    const allLoans = await Loan.find();
+    console.log('All loans in DB:', allLoans.length);
+    
+    // Try to find loans for this user
+    const userLoans = await Loan.find({ user: userId }).sort({ date: -1 });
+    console.log('User loans found:', userLoans.length);
+    
+    res.json(userLoans);
   } catch (err) {
+    console.error('Error in getLoans:', err);
     res.status(500).json({ message: err.message });
   }
 };

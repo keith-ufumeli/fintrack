@@ -3,9 +3,21 @@ import Transaction from "../models/Transaction.js";
 export const getTransactions = async (req, res) => {
   try {
     const userId = req.userId; // From auth middleware
-    const transactions = await Transaction.find({ user: userId }).sort({ date: -1 });
-    res.json(transactions);
+    console.log('Getting transactions for user:', userId);
+    
+    // First, let's see what transactions exist
+    const allTransactions = await Transaction.find();
+    console.log('All transactions in DB:', allTransactions.length);
+    
+    // Try to find transactions for this user
+    const userTransactions = await Transaction.find({ user: userId }).sort({ date: -1 });
+    console.log('User transactions found:', userTransactions.length);
+    
+    // If no user-specific transactions found, but user exists, return empty array
+    // This is expected for new users
+    res.json(userTransactions);
   } catch (err) {
+    console.error('Error in getTransactions:', err);
     res.status(500).json({ message: err.message });
   }
 };
