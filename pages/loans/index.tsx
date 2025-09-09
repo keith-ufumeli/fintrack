@@ -9,7 +9,6 @@ import Header from "@/components/Header"
 import { CardSpotlight } from "@/components/ui/card-spotlight"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 import { Button as StatefulButton } from "@/components/ui/stateful-button"
-import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
 import { CreditCard, HandCoins, TrendingUp, TrendingDown, Receipt } from "lucide-react"
 
 type Loan = {
@@ -44,30 +43,16 @@ export default function LoansPage() {
   }
 
   return (
-    <BackgroundGradientAnimation
-      gradientBackgroundStart="rgb(0, 17, 82)"
-      gradientBackgroundEnd="rgb(108, 0, 162)"
-      firstColor="59, 130, 246"
-      secondColor="139, 92, 246"
-      thirdColor="100, 220, 255"
-      fourthColor="200, 50, 50"
-      fifthColor="180, 180, 50"
-      pointerColor="140, 100, 255"
-      size="80%"
-      blendingValue="hard-light"
-      className="min-h-screen"
-      containerClassName="min-h-screen"
-    >
-      <div className="relative z-10">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pb-16">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-8 pb-16">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
-            <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-blue-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full sm:w-[30rem] h-auto rounded-xl p-6 border">
+            <CardBody className="bg-card border-border backdrop-blur-sm relative group/card hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-blue-500/[0.1] w-full sm:w-[30rem] h-auto rounded-xl p-6 border transition-all duration-300">
               <CardItem
                 translateZ="50"
-                className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-2"
+                className="text-xl font-bold text-foreground flex items-center gap-2"
               >
                 <CreditCard className="w-6 h-6" />
                 Loans & Borrowing
@@ -161,9 +146,8 @@ export default function LoansPage() {
             </div>
           </CardSpotlight>
         </div>
-        </main>
-      </div>
-    </BackgroundGradientAnimation>
+      </main>
+    </div>
   )
 }
 
@@ -182,7 +166,7 @@ function LoanTable({ loans }: { loans: Loan[] }) {
       {loans.map((loan, index) => (
         <div 
           key={loan._id} 
-          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border bg-background/50 hover:bg-background/80 transition-colors"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card/50 hover:bg-card/80 transition-colors"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className="flex items-center space-x-3 mb-2 sm:mb-0">
@@ -192,12 +176,12 @@ function LoanTable({ loans }: { loans: Loan[] }) {
               <TrendingDown className="w-5 h-5 text-orange-500" />
             )}
             <div>
-              <p className="font-medium">{loan.person}</p>
+              <p className="font-medium text-foreground">{loan.person}</p>
               <p className="text-sm text-muted-foreground capitalize">{loan.type}</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
-            <span className="font-semibold text-lg">${loan.amount}</span>
+            <span className="font-semibold text-lg text-foreground">${loan.amount}</span>
             <div className="flex items-center space-x-2">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 loan.status === 'paid' 

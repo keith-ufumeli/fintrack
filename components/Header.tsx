@@ -35,7 +35,7 @@ export default function Header() {
   const isActive = (path: string) => router.pathname === path
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -43,7 +43,7 @@ export default function Header() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">F</span>
             </div>
-            <span className="font-bold text-xl">FinTrack</span>
+            <span className="font-bold text-xl text-foreground">FinTrack</span>
           </Link>
 
           {/* Navigation */}

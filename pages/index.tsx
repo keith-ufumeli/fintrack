@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
-import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { DollarSign, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 
 interface Transaction {
@@ -35,30 +34,16 @@ export default function Home() {
   };
 
   return (
-    <BackgroundGradientAnimation
-      gradientBackgroundStart="rgb(108, 0, 162)"
-      gradientBackgroundEnd="rgb(0, 17, 82)"
-      firstColor="18, 113, 255"
-      secondColor="221, 74, 255"
-      thirdColor="100, 220, 255"
-      fourthColor="200, 50, 50"
-      fifthColor="180, 180, 50"
-      pointerColor="140, 100, 255"
-      size="80%"
-      blendingValue="hard-light"
-      className="min-h-screen"
-      containerClassName="min-h-screen"
-    >
-      <div className="relative z-10">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pb-16">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-8 pb-16">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
-            <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full sm:w-[30rem] h-auto rounded-xl p-6 border">
+            <CardBody className="bg-card border-border backdrop-blur-sm relative group/card hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] w-full sm:w-[30rem] h-auto rounded-xl p-6 border transition-all duration-300">
               <CardItem
                 translateZ="50"
-                className="text-xl font-bold text-neutral-600 dark:text-white flex items-center gap-2"
+                className="text-xl font-bold text-foreground flex items-center gap-2"
               >
                 <DollarSign className="w-6 h-6" />
                 FinTrack Dashboard
@@ -139,7 +124,7 @@ export default function Home() {
                   {transactions.map((t, index) => (
                     <div 
                       key={t._id} 
-                      className="flex justify-between items-center p-4 rounded-lg border bg-background/50 hover:bg-background/80 transition-colors"
+                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card/50 hover:bg-card/80 transition-colors"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <div className="flex items-center space-x-3">
@@ -149,7 +134,7 @@ export default function Home() {
                           <TrendingDown className="w-5 h-5 text-red-500" />
                         )}
                         <div>
-                          <p className="font-medium">{t.description || "No description"}</p>
+                          <p className="font-medium text-foreground">{t.description || "No description"}</p>
                           <p className="text-sm text-muted-foreground capitalize">{t.type}</p>
                         </div>
                       </div>
@@ -163,8 +148,7 @@ export default function Home() {
             </div>
           </CardSpotlight>
         </div>
-        </main>
-      </div>
-    </BackgroundGradientAnimation>
+      </main>
+    </div>
   );
 }
