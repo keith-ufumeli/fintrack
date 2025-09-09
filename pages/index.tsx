@@ -40,19 +40,39 @@ export default function Home() {
     try {
       // Validate and transform data for API
       const validatedData = transactionSchema.parse(data);
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validatedData),
       });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       form.reset();
       // Refresh transactions
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
         .then(res => res.json())
         .then(data => setTransactions(data));
+      return true; // Success
     } catch (error) {
       console.error("Error submitting transaction:", error);
+      return false; // Failure
     }
+  };
+
+  const handleFormSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Trigger form validation
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      return false; // Form validation failed
+    }
+    
+    // Get form data and submit
+    const formData = form.getValues();
+    return await onSubmit(formData);
   };
 
   return (
@@ -99,7 +119,7 @@ export default function Home() {
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-6 text-center">Add Transaction</h2>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
@@ -156,7 +176,11 @@ export default function Home() {
                       )}
                     />
                   </div>
-                  <StatefulButton type="submit" className="w-full">
+                  <StatefulButton 
+                    type="button" 
+                    className="w-full"
+                    onFormSubmit={handleFormSubmit}
+                  >
                     Add Transaction
                   </StatefulButton>
                 </form>
