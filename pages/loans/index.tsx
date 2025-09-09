@@ -93,20 +93,20 @@ function LoanTable({ loans }: { loans: Loan[] }) {
           <thead>
             <tr>
               <th className="text-left">Person</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Date</th>
+              <th className="text-left">Type</th>
+              <th className="text-left">Amount</th>
+              <th className="text-left">Status</th>
+              <th className="text-left">Date</th>
             </tr>
           </thead>
           <tbody>
             {loans.map(loan => (
               <tr key={loan._id}>
-                <td>{loan.person}</td>
-                <td>{loan.type}</td>
-                <td>${loan.amount}</td>
-                <td>{loan.status}</td>
-                <td>{new Date(loan.date).toLocaleDateString()}</td>
+                <td className="text-left">{loan.person}</td>
+                <td className="text-left">{loan.type}</td>
+                <td className="text-left">${loan.amount}</td>
+                <td className="text-left">{loan.status}</td>
+                <td className="text-left">{new Date(loan.date).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

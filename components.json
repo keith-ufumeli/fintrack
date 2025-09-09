@@ -18,5 +18,26 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@acertenity": {
+      "name": "Acertenity",
+      "url": "https://ui.aceternity.com/registry/{name}.json"
+    },
+    "@originui": {
+      "name": "Origin UI",
+      "url": "https://originui.com/r/{name}.json"
+    },
+    "@cult-ui": {
+      "name": "Cult UI",
+      "url": "https://cult-ui.com/r/{name}.json"
+    },
+    "@kibo-ui": {
+      "name": "Kibo UI",
+      "url": "https://kibo-ui.com/r/{name}.json"
+    },
+    "@reui": {
+      "name": "ReUI",
+      "url": "https://reui.io/r/{name}.json"
+    }
+  }
 }
