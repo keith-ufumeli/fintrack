@@ -1,0 +1,238 @@
+---
+description: React component conventions and patterns for shadcn/ui based components
+globs: components/**/*.tsx
+alwaysApply: true
+---
+
+# React Component Conventions
+
+This document outlines the conventions and patterns used in React components, particularly shadcn/ui based components in the fintrack project.
+
+## Component Structure Patterns
+
+### Import Organization
+```typescript
+// 1. React imports first
+import * as React from "react"
+
+// 2. Third-party library imports
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+// 3. Internal utility imports
+import { cn } from "@/lib/utils"
+```
+
+### Component Variants with CVA
+Use `class-variance-authority` (CVA) for component variants:
+
+```typescript
+const componentVariants = cva(
+  // Base classes (always applied)
+  "base-classes-here",
+  {
+    variants: {
+      variant: {
+        default: "default-variant-classes",
+        secondary: "secondary-variant-classes",
+        destructive: "destructive-variant-classes",
+      },
+      size: {
+        default: "default-size-classes",
+        sm: "small-size-classes",
+        lg: "large-size-classes",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+```
+
+### Component Props Interface
+```typescript
+interface ComponentProps extends 
+  React.ComponentProps<"element">,
+  VariantProps<typeof componentVariants> {
+  // Additional props specific to component
+  asChild?: boolean
+  customProp?: string
+}
+```
+
+### Component Implementation Pattern
+```typescript
+function Component({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: ComponentProps) {
+  const Comp = asChild ? Slot : "element"
+
+  return (
+    <Comp
+      data-slot="component-name"
+      className={cn(componentVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+```
+
+## Styling Conventions
+
+### Tailwind CSS Patterns
+- **Base Classes**: Always include essential base classes in CVA base
+- **Responsive Design**: Use responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`)
+- **Dark Mode**: Include `dark:` variants for dark mode support
+- **Focus States**: Implement `focus-visible:` for accessibility
+- **Disabled States**: Use `disabled:` for disabled component states
+- **Hover States**: Include `hover:` for interactive elements
+
+### CSS Class Organization
+```typescript
+// Base classes (layout, typography, transitions)
+"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all"
+
+// State classes (disabled, focus, aria)
+"disabled:pointer-events-none disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50"
+
+// Child element styling
+"[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4"
+```
+
+### Color System Usage
+- **Primary**: `bg-primary text-primary-foreground`
+- **Secondary**: `bg-secondary text-secondary-foreground`
+- **Destructive**: `bg-destructive text-destructive-foreground`
+- **Accent**: `bg-accent text-accent-foreground`
+- **Muted**: `bg-muted text-muted-foreground`
+
+## Accessibility Conventions
+
+### ARIA Attributes
+```typescript
+// Include proper ARIA attributes
+"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40"
+"aria-invalid:border-destructive"
+```
+
+### Focus Management
+```typescript
+// Focus-visible for keyboard navigation
+"focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+"outline-none" // Remove default outline, use custom focus ring
+```
+
+### Semantic HTML
+- Use appropriate HTML elements (`button`, `a`, `div`)
+- Include `data-slot` attributes for component identification
+- Support `asChild` prop for polymorphic components
+
+## Component Composition Patterns
+
+### Polymorphic Components
+```typescript
+// Support rendering as different elements
+const Comp = asChild ? Slot : "button"
+
+// Use Radix UI Slot for composition
+import { Slot } from "@radix-ui/react-slot"
+```
+
+### Class Name Merging
+```typescript
+// Use cn utility for class merging
+import { cn } from "@/lib/utils"
+
+className={cn(componentVariants({ variant, size, className }))}
+```
+
+### Props Spreading
+```typescript
+// Spread remaining props to allow full customization
+{...props}
+```
+
+## Export Patterns
+
+### Named Exports
+```typescript
+// Export both component and variants
+export { Component, componentVariants }
+```
+
+### Type Exports
+```typescript
+// Export types for external use
+export type { ComponentProps }
+```
+
+## File Organization
+
+### File Naming
+- Use PascalCase for component files: `Button.tsx`
+- Use kebab-case for multi-word components: `card-spotlight.tsx`
+- Place in appropriate directories: `components/ui/` for reusable components
+
+### Component Structure
+1. **Imports** (React, third-party, internal)
+2. **Variant definitions** (CVA)
+3. **Type definitions** (interfaces, types)
+4. **Component implementation**
+5. **Exports** (component, variants, types)
+
+## Best Practices
+
+### Performance
+- Use `React.ComponentProps` for prop inheritance
+- Implement proper TypeScript typing
+- Use `asChild` pattern for composition over inheritance
+
+### Maintainability
+- Keep variants in separate CVA definitions
+- Use semantic class names and CSS variables
+- Document component props and usage
+
+### Consistency
+- Follow established naming conventions
+- Use consistent spacing and sizing scales
+- Maintain consistent color and typography systems
+
+### Testing
+- Include `data-slot` attributes for testing
+- Ensure proper accessibility attributes
+- Test with different variants and sizes
+
+## Common Patterns
+
+### Icon Integration
+```typescript
+// Support for icons with proper sizing
+"[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4"
+"has-[>svg]:px-3" // Adjust padding when icon is present
+```
+
+### Size Variants
+```typescript
+size: {
+  default: "h-9 px-4 py-2",
+  sm: "h-8 px-3 py-1.5",
+  lg: "h-10 px-6 py-2.5",
+  icon: "size-9", // Square icon button
+}
+```
+
+### State Management
+```typescript
+// Handle different states consistently
+"disabled:pointer-events-none disabled:opacity-50"
+"hover:bg-primary/90"
+"focus-visible:ring-ring/50"
+```
+
+This convention ensures consistent, accessible, and maintainable React components throughout the project.

@@ -1,0 +1,285 @@
+---
+description: Project directory structure and important files overview for the fintrack Next.js application
+globs: **/*
+alwaysApply: true
+---
+
+# Project Structure Guide
+
+This document outlines the directory structure and important files in the fintrack Next.js application.
+
+## Root Directory Structure
+
+```
+fintrack/
+├── .cursor/                    # Cursor IDE configuration
+│   ├── mcp.json               # Model Context Protocol configuration
+│   └── rules/                 # Cursor rules directory
+│       ├── cursor-rules.mdc   # How to add/edit cursor rules
+│       ├── self-improvement.mdc # Self-improvement guidelines
+│       └── project-structure.mdc # This file
+├── components/                 # React components
+│   ├── Header.tsx             # Main header component
+│   └── ui/                    # Reusable UI components
+├── lib/                       # Utility functions and helpers
+├── pages/                     # Next.js pages (Pages Router)
+│   ├── api/                   # API routes
+│   └── loans/                 # Feature-specific pages
+├── public/                    # Static assets
+├── styles/                    # Global styles
+├── node_modules/              # Dependencies (auto-generated)
+├── .gitignore                 # Git ignore rules
+├── components.json            # shadcn/ui configuration
+├── eslint.config.mjs          # ESLint configuration
+├── next.config.ts             # Next.js configuration
+├── next-env.d.ts              # Next.js TypeScript declarations
+├── package.json               # Project dependencies and scripts
+├── package-lock.json          # Dependency lock file
+├── postcss.config.mjs         # PostCSS configuration
+├── README.md                  # Project documentation
+├── tailwind.config.js         # Tailwind CSS configuration
+└── tsconfig.json              # TypeScript configuration
+```
+
+## Key Directories
+
+### `/components/`
+- **Purpose**: React components for the application
+- **Structure**:
+  - `Header.tsx` - Main navigation header
+  - `ui/` - Reusable UI components (shadcn/ui based)
+
+### `/components/ui/`
+- **Purpose**: Reusable UI components using shadcn/ui
+- **Key Components**:
+  - `button.tsx`, `card.tsx`, `input.tsx` - Basic UI elements
+  - `3d-card.tsx`, `card-spotlight.tsx` - Advanced visual components
+  - `background-gradient-animation.tsx` - Animation components
+  - `hero-parallax.tsx` - Parallax effects
+  - `form.tsx`, `table.tsx`, `tabs.tsx` - Complex UI patterns
+
+### `/pages/`
+- **Purpose**: Next.js Pages Router structure
+- **Structure**:
+  - `_app.tsx` - App wrapper component
+  - `_document.tsx` - HTML document structure
+  - `index.tsx` - Home page
+  - `api/` - API routes
+  - `loans/` - Feature-specific pages
+
+### `/pages/api/`
+- **Purpose**: Next.js API routes
+- **Current**: `hello.ts` - Example API endpoint
+
+### `/lib/`
+- **Purpose**: Utility functions and shared logic
+- **Files**: `utils.ts` - Common utility functions
+
+### `/public/`
+- **Purpose**: Static assets served directly
+- **Contents**: Icons, SVGs, and other static files
+
+### `/styles/`
+- **Purpose**: Global CSS styles
+- **Files**: `globals.css` - Global styles and Tailwind imports
+
+### `/.cursor/`
+- **Purpose**: Cursor IDE configuration and rules
+- **Structure**:
+  - `mcp.json` - Model Context Protocol settings
+  - `rules/` - Cursor rules for code consistency
+
+## Important Configuration Files
+
+### `package.json`
+- **Purpose**: Project dependencies and scripts
+- **Key Dependencies Analysis**:
+
+#### Core Framework Dependencies
+- **Next.js 15.4.6** (Pages Router)
+  - Latest stable version with Turbopack support
+  - Best Practices: Use `getStaticProps`/`getStaticPaths` for SSG, leverage built-in `<Image>` component, implement dynamic imports for code splitting
+  - Performance: Enable bundle analysis with `@next/bundle-analyzer`
+
+- **React 19.1.0**
+  - Latest React version with concurrent features
+  - Best Practices: Use functional components with hooks, implement proper state management, leverage React 19's new features like automatic batching
+  - Performance: Use React.memo() for expensive components, implement proper dependency arrays in useEffect
+
+#### UI & Styling Dependencies
+- **Tailwind CSS 3.4.0** with `tailwindcss-animate 1.0.7`
+  - Latest stable version with enhanced animation support
+  - Best Practices: Use utility-first approach, configure PurgeCSS for production, leverage CSS variables for theming
+  - Performance: Remove unused styles in production builds
+
+- **shadcn/ui** (Multiple Registries)
+  - Aceternity, Origin UI, Cult UI, Kibo UI, ReUI registries configured
+  - Best Practices: Use CLI for component installation, maintain component consistency, test accessibility compliance
+  - Customization: Keep UI and logic separate, avoid adding API calls directly in UI components
+
+#### Animation & 3D Dependencies
+- **Framer Motion 12.23.12**
+  - Latest version with enhanced performance optimizations
+  - Best Practices: Use declarative animations, leverage `layout` prop for layout animations, implement gesture support
+  - Performance: Use `motion` components efficiently, avoid over-animation
+
+- **Three.js 0.180.0** with `@react-three/fiber 9.3.0`
+  - Latest stable version with React integration
+  - Best Practices: Use React Three Fiber for declarative 3D scenes, implement proper cleanup, optimize geometry and materials
+  - Performance: Use instanced rendering for repeated objects, implement proper camera controls
+
+#### Form & Validation Dependencies
+- **React Hook Form 7.62.0** with `@hookform/resolvers 5.2.1`
+  - Latest version with enhanced TypeScript support
+  - Best Practices: Use controlled components, implement proper validation, leverage built-in performance optimizations
+  - Integration: Works seamlessly with Zod for schema validation
+
+- **Zod 4.1.5**
+  - Latest version with enhanced TypeScript integration
+  - Best Practices: Define comprehensive schemas, use for runtime type checking, integrate with forms for validation
+  - Performance: Use lazy evaluation for complex schemas
+
+#### Utility Dependencies
+- **class-variance-authority 0.7.1**: Component variant management
+- **clsx 2.1.1**: Conditional className utility
+- **tailwind-merge 3.3.1**: Tailwind class merging utility
+- **lucide-react 0.543.0**: Icon library with tree-shaking support
+
+### `components.json`
+- **Purpose**: shadcn/ui configuration
+- **Features**:
+  - Multiple UI registries (Aceternity, Origin UI, Cult UI, etc.)
+  - Path aliases for clean imports
+  - Tailwind CSS integration
+
+### `tailwind.config.js`
+- **Purpose**: Tailwind CSS configuration
+- **Features**: Custom animations and styling
+
+### `tsconfig.json`
+- **Purpose**: TypeScript configuration
+- **Features**: Path aliases matching components.json
+
+## Dependency Management Best Practices
+
+### Version Management
+- **Semantic Versioning**: Use SemVer (^) for minor updates, (~) for patch updates
+- **Lock Files**: Always commit `package-lock.json` for consistent installs
+- **Regular Updates**: Run `npm outdated` monthly to check for updates
+- **Security Audits**: Use `npm audit` to identify vulnerabilities
+
+### Update Strategy
+```bash
+# Check for outdated packages
+npm outdated
+
+# Update all packages (minor/patch only)
+npm update
+
+# Update specific package to latest
+npm install package-name@latest
+
+# Security audit
+npm audit
+npm audit fix
+```
+
+### Performance Optimization
+- **Bundle Analysis**: Use `@next/bundle-analyzer` to monitor bundle size
+- **Tree Shaking**: Ensure unused code is eliminated in production
+- **Dynamic Imports**: Lazy load heavy components with `next/dynamic`
+- **Code Splitting**: Implement route-based code splitting
+
+### Security Best Practices
+- **Regular Audits**: Run security audits monthly
+- **Dependency Scanning**: Use tools like Dependabot for automated updates
+- **Minimal Dependencies**: Remove unused packages regularly
+- **Version Pinning**: Pin critical dependencies to specific versions
+
+## Development Guidelines
+
+### Adding New Components
+1. **UI Components**: Add to `/components/ui/` following shadcn/ui patterns
+2. **Feature Components**: Add to `/components/` or create feature-specific folders
+3. **Pages**: Add to `/pages/` following Next.js routing conventions
+
+### File Naming Conventions
+- **Components**: PascalCase (e.g., `Header.tsx`)
+- **Utilities**: camelCase (e.g., `utils.ts`)
+- **Pages**: lowercase with hyphens for routes (e.g., `loans/index.tsx`)
+
+### Import Paths
+Use the configured aliases:
+- `@/components` - Components directory
+- `@/lib` - Utilities directory
+- `@/components/ui` - UI components
+- `@/hooks` - Custom hooks (when created)
+
+### Styling Approach
+- **Primary**: Tailwind CSS classes
+- **Components**: shadcn/ui component library
+- **Animations**: Framer Motion and custom CSS animations
+- **3D Effects**: Three.js integration
+
+## Technology Stack & Best Practices
+
+### Core Framework
+- **Next.js 15.4.6** (Pages Router)
+  - Use `getStaticProps` for static content, `getServerSideProps` for dynamic content
+  - Implement proper error boundaries with `_error.tsx`
+  - Leverage Next.js Image optimization for better performance
+  - Use `next/head` for SEO optimization
+
+- **React 19.1.0**
+  - Prefer functional components with hooks over class components
+  - Use `useCallback` and `useMemo` for performance optimization
+  - Implement proper error boundaries for error handling
+  - Leverage React 19's automatic batching for better performance
+
+### Styling & UI
+- **Tailwind CSS 3.4.0**
+  - Use utility-first approach for rapid development
+  - Configure custom design tokens in `tailwind.config.js`
+  - Implement dark mode with `dark:` prefix
+  - Use `@apply` directive sparingly for component-specific styles
+
+- **shadcn/ui** (Multiple Registries)
+  - Use CLI commands for component installation: `npx shadcn@latest add [component]`
+  - Maintain consistent component API across registries
+  - Customize components through CSS variables, not direct class overrides
+  - Test accessibility with screen readers and keyboard navigation
+
+### Animation & 3D
+- **Framer Motion 12.23.12**
+  - Use `motion` components for declarative animations
+  - Implement `layout` animations for smooth transitions
+  - Use `AnimatePresence` for enter/exit animations
+  - Optimize performance with `will-change` CSS property
+
+- **Three.js 0.180.0** with **React Three Fiber 9.3.0**
+  - Use declarative 3D scene composition
+  - Implement proper cleanup in `useEffect` hooks
+  - Use `useFrame` for animation loops
+  - Optimize with instanced rendering for repeated objects
+
+### Forms & Validation
+- **React Hook Form 7.62.0**
+  - Use `register` for form field registration
+  - Implement `Controller` for complex components
+  - Use `watch` for dependent field updates
+  - Leverage built-in performance optimizations
+
+- **Zod 4.1.5**
+  - Define schemas for all data structures
+  - Use `z.infer` for TypeScript type generation
+  - Implement custom validators for business logic
+  - Use `z.lazy()` for recursive schemas
+
+### Development Tools
+- **TypeScript 5**: Enable strict mode, use proper type definitions
+- **ESLint**: Configure with Next.js and React rules
+- **PostCSS**: Use for CSS processing and optimization
+- **Lucide React**: Tree-shakeable icon library
+
+## Project Purpose
+This appears to be a financial tracking application ("fintrack") with a focus on loans management, built with modern React patterns and beautiful UI components.
