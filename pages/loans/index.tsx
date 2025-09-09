@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import Header from "@/components/Header"
 
 type Loan = {
   _id: string
@@ -38,15 +39,23 @@ export default function LoansPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h1 className="text-3xl font-bold">Loans & Borrowing</h1>
       <Card className="p-4">
         <h2 className="text-xl font-semibold mb-4">Add Loan / Borrow Record</h2>
         <div className="flex gap-2 mb-2">
           <Input placeholder="Person" value={form.person} onChange={e => setForm({ ...form, person: e.target.value })} />
           <Input placeholder="Amount" type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-          <select className="border rounded px-2 py-1" value={form.type} onChange={e => setForm({ ...form, type: e.target.value as "lend" | "borrow" })}>
-            <option value="lend">Lend</option>
-            <option value="borrow">Borrow</option>
+          <select 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground" 
+            value={form.type} 
+            onChange={e => setForm({ ...form, type: e.target.value as "lend" | "borrow" })}
+          >
+            <option value="lend" className="bg-background text-foreground">Lend</option>
+            <option value="borrow" className="bg-background text-foreground">Borrow</option>
           </select>
         </div>
         <Input placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
@@ -70,6 +79,8 @@ export default function LoansPage() {
           <LoanTable loans={loans.filter(l => l.type === "borrow")} />
         </TabsContent>
       </Tabs>
+        </div>
+      </main>
     </div>
   )
 }
