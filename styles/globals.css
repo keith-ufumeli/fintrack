@@ -1,77 +1,78 @@
 @tailwind base;
+
+@custom-variant dark (&:is(.dark *));
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: 210 40% 98%;
-  --foreground: 210 25% 12%;
-  --card: 210 40% 98%;
-  --card-foreground: 210 25% 12%;
-  --popover: 210 40% 98%;
-  --popover-foreground: 210 25% 12%;
-  --primary: 210 25% 12%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 262.1 83.3% 57.8%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 15% 22%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 210 15% 22%;
-  --muted-foreground: 210 10% 50%;
-  --accent: 210 10% 50%;
-  --accent-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 210 15% 22%;
-  --input: 210 15% 22%;
-  --ring: 210 25% 12%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 262.1 83.3% 57.8%;
   --chart-1: 12 76% 61%;
   --chart-2: 173 58% 39%;
   --chart-3: 197 37% 24%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
   --radius: 0.5rem;
-  
-  /* Custom color palette */
-  --custom-primary: #1E2022;
-  --custom-secondary: #34373b;
-  --custom-text: #1E2022;
-  --custom-accent: #788189;
-  --custom-bg: #F0F5F9;
-  --custom-default: #F0F5F9;
+
+  /* Custom color palette - Bubblegum theme */
+  --custom-primary: oklch(0.6209 0.1801 348.1385);
+  --custom-secondary: oklch(0.8095 0.0694 198.1863);
+  --custom-text: oklch(0.4712 0 0);
+  --custom-accent: oklch(0.9195 0.0801 87.6670);
+  --custom-bg: oklch(0.9399 0.0203 345.6985);
+  --custom-default: oklch(0.9498 0.0500 86.8891);
 }
 
 .dark {
-  /* Modern dark theme colors */
-  --background: 0 0% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 262.1 83.3% 57.8%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 262.1 83.3% 57.8%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
-  
-  /* Custom dark theme colors */
-  --custom-primary: #ffffff;
-  --custom-secondary: #1f2937;
-  --custom-text: #f9fafb;
-  --custom-accent: #6b7280;
-  --custom-bg: #0f172a;
-  --custom-default: #1e293b;
+
+  /* Custom dark theme colors - Bubblegum theme */
+  --custom-primary: oklch(0.9195 0.0801 87.6670);
+  --custom-secondary: oklch(0.7794 0.0803 4.1330);
+  --custom-text: oklch(0.9306 0.0197 349.0785);
+  --custom-accent: oklch(0.6699 0.0988 356.9762);
+  --custom-bg: oklch(0.2497 0.0305 234.1628);
+  --custom-default: oklch(0.2902 0.0299 233.5352);
 }
 
 @layer base {
@@ -84,5 +85,6 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    letter-spacing: var(--tracking-normal);
   }
 }

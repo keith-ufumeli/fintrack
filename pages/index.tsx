@@ -40,7 +40,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
-            <CardBody className="bg-card border-border backdrop-blur-sm relative group/card hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] w-full sm:w-[30rem] h-auto rounded-xl p-6 border transition-all duration-300">
+            <CardBody className="bg-card border-border relative group/card hover:shadow-md w-full sm:w-[30rem] h-auto rounded-lg p-6 border transition-all duration-300">
               <CardItem
                 translateZ="50"
                 className="text-xl font-bold text-foreground flex items-center gap-2"
@@ -124,7 +124,7 @@ export default function Home() {
                   {transactions.map((t, index) => (
                     <div 
                       key={t._id} 
-                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card/50 hover:bg-card/80 transition-colors"
+                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card hover:bg-accent/5 transition-colors shadow-sm"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <div className="flex items-center space-x-3">
