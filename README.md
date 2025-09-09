@@ -1,8 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# FinTrack - Personal Finance Management App
+
+A modern, beautiful personal finance tracking application built with Next.js, featuring transaction management, loan tracking, and GitHub authentication.
+
+## Features
+
+- 🔐 **GitHub Authentication** - Secure sign-in with GitHub OAuth
+- 💰 **Transaction Management** - Track income and expenses with beautiful animations
+- 🏦 **Loan Tracking** - Manage money you've lent or borrowed
+- 🎨 **Modern UI** - Beautiful bubblegum-themed design with smooth animations
+- 📱 **Responsive Design** - Works perfectly on desktop and mobile
+- 🌙 **Dark Mode** - Toggle between light and dark themes
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- GitHub OAuth App (for authentication)
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# NextAuth.js Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here
+
+# GitHub OAuth App Configuration
+GITHUB_ID=your-github-client-id
+GITHUB_SECRET=your-github-client-secret
+
+# Backend API URL (if different from frontend)
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+### GitHub OAuth Setup
+
+1. Go to GitHub Settings > Developer settings > OAuth Apps
+2. Create a new OAuth App with:
+   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
+   - **Homepage URL**: `http://localhost:3000`
+3. Copy the Client ID and Client Secret to your `.env.local` file
+
+### Installation
+
+First, install dependencies and run the development server:
 
 ```bash
 npm run dev

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useSession } from "next-auth/react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
+import ProtectedRoute from "@/components/ProtectedRoute"
 import { CardSpotlight } from "@/components/ui/card-spotlight"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 import { Button as StatefulButton } from "@/components/ui/stateful-button"
@@ -27,6 +29,7 @@ type Loan = {
 }
 
 export default function LoansPage() {
+  const { data: session } = useSession();
   const [loans, setLoans] = useState<Loan[]>([])
   
   const form = useForm<LoanFormData>({
@@ -37,35 +40,107 @@ export default function LoansPage() {
       type: "lend",
       description: "",
     },
-  })
+  });
+
+  // Helper function to get JWT token from backend
+  const getJWTToken = async () => {
+    if (!session?.user) return null;
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          githubId: session.user.id,
+          username: session.user.name,
+          email: session.user.email,
+          name: session.user.name,
+          avatar: session.user.image,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.token;
+      }
+    } catch (error) {
+      console.error('Error getting JWT token:', error);
+    }
+    
+    return null;
+  };
+
+  // Helper function to get auth headers
+  const getAuthHeaders = async () => {
+    const token = await getJWTToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  };
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`)
-      .then(res => res.json())
-      .then(setLoans)
-  }, [])
+    const fetchLoans = async () => {
+      if (!session?.user) return;
+      
+      try {
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
+          headers,
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setLoans(data);
+        } else {
+          console.error('Expected array but got:', data);
+          setLoans([]);
+        }
+      } catch (error) {
+        console.error('Error fetching loans:', error);
+        setLoans([]);
+      }
+    };
+
+    fetchLoans();
+  }, [session])
 
   const onSubmit = async (data: LoanFormData) => {
     try {
       // Validate and transform data for API
-      const validatedData = loanSchema.parse(data)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      const validatedData = loanSchema.parse(data);
+      const headers = await getAuthHeaders();
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
+        method: "POST",
+        headers,
         body: JSON.stringify(validatedData),
-    })
+      });
       
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`)
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
       
-    const newLoan = await res.json()
-    setLoans([newLoan, ...loans])
-      form.reset()
-      return true // Success
+      const newLoan = await res.json();
+      setLoans([newLoan, ...loans]);
+      form.reset();
+      return true; // Success
     } catch (error) {
-      console.error("Error submitting loan:", error)
-      return false // Failure
+      console.error("Error submitting loan:", error);
+      return false; // Failure
     }
   }
 
@@ -83,9 +158,10 @@ export default function LoansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pb-16">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 pb-16">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
@@ -109,14 +185,14 @@ export default function LoansPage() {
                   <div className="flex flex-col items-center">
                     <TrendingUp className="w-6 h-6 text-primary mb-1" />
                     <div className="text-2xl font-bold text-primary">
-                      ${loans.filter(l => l.type === 'lend').reduce((sum, l) => sum + l.amount, 0)}
+                      ${Array.isArray(loans) ? loans.filter(l => l.type === 'lend').reduce((sum, l) => sum + l.amount, 0) : 0}
                     </div>
                     <p className="text-xs text-foreground opacity-70">Lent Out</p>
                   </div>
                   <div className="flex flex-col items-center">
                     <TrendingDown className="w-6 h-6 text-secondary mb-1" />
                     <div className="text-2xl font-bold text-secondary">
-                      ${loans.filter(l => l.type === 'borrow').reduce((sum, l) => sum + l.amount, 0)}
+                      ${Array.isArray(loans) ? loans.filter(l => l.type === 'borrow').reduce((sum, l) => sum + l.amount, 0) : 0}
                     </div>
                     <p className="text-xs text-foreground opacity-70">Borrowed</p>
                   </div>
@@ -226,13 +302,13 @@ export default function LoansPage() {
                 </TabsList>
 
                 <TabsContent value="all">
-                  <LoanTable loans={loans} />
+                  <LoanTable loans={Array.isArray(loans) ? loans : []} />
                 </TabsContent>
                 <TabsContent value="lend">
-                  <LoanTable loans={loans.filter(l => l.type === "lend")} />
+                  <LoanTable loans={Array.isArray(loans) ? loans.filter(l => l.type === "lend") : []} />
                 </TabsContent>
                 <TabsContent value="borrow">
-                  <LoanTable loans={loans.filter(l => l.type === "borrow")} />
+                  <LoanTable loans={Array.isArray(loans) ? loans.filter(l => l.type === "borrow") : []} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -240,6 +316,7 @@ export default function LoansPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   )
 }
 
@@ -258,8 +335,7 @@ function LoanTable({ loans }: { loans: Loan[] }) {
       {loans.map((loan, index) => (
         <div 
           key={loan._id} 
-          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card shadow-sm"
-          style={{ animationDelay: `${index * 0.1}s` }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card shadow-sm animate-in slide-in-from-bottom-4 fade-in"
         >
           <div className="flex items-center space-x-3 mb-2 sm:mb-0">
             {loan.type === "lend" ? (

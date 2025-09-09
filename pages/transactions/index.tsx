@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
@@ -19,6 +21,7 @@ interface Transaction {
 }
 
 export default function TransactionsPage() {
+  const { data: session } = useSession();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   
   const form = useForm<TransactionFormData>({
@@ -30,19 +33,91 @@ export default function TransactionsPage() {
     },
   });
 
+  // Helper function to get JWT token from backend
+  const getJWTToken = async () => {
+    if (!session?.user) return null;
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          githubId: session.user.id,
+          username: session.user.name,
+          email: session.user.email,
+          name: session.user.name,
+          avatar: session.user.image,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.token;
+      }
+    } catch (error) {
+      console.error('Error getting JWT token:', error);
+    }
+    
+    return null;
+  };
+
+  // Helper function to get auth headers
+  const getAuthHeaders = async () => {
+    const token = await getJWTToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  };
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
-      .then(res => res.json())
-      .then(data => setTransactions(data));
-  }, []);
+    const fetchTransactions = async () => {
+      if (!session?.user) return;
+      
+      try {
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+          headers,
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setTransactions(data);
+        } else {
+          console.error('Expected array but got:', data);
+          setTransactions([]);
+        }
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+        setTransactions([]);
+      }
+    };
+
+    fetchTransactions();
+  }, [session]);
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
       // Validate and transform data for API
       const validatedData = transactionSchema.parse(data);
+      const headers = await getAuthHeaders();
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers,
         body: JSON.stringify(validatedData),
       });
       
@@ -51,10 +126,23 @@ export default function TransactionsPage() {
       }
       
       form.reset();
+      
       // Refresh transactions
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
-        .then(res => res.json())
-        .then(data => setTransactions(data));
+      const refreshHeaders = await getAuthHeaders();
+      const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+        headers: refreshHeaders,
+      });
+      
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        if (Array.isArray(refreshData)) {
+          setTransactions(refreshData);
+        } else {
+          console.error('Expected array but got:', refreshData);
+          setTransactions([]);
+        }
+      }
+      
       return true; // Success
     } catch (error) {
       console.error("Error submitting transaction:", error);
@@ -76,9 +164,10 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pb-16">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 pb-16">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
@@ -101,12 +190,12 @@ export default function TransactionsPage() {
                 <div className="text-4xl font-bold text-center flex items-center justify-center gap-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-8 h-8 text-primary" />
-                    <span className="text-primary">${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}</span>
+                    <span className="text-primary">${Array.isArray(transactions) ? transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) : 0}</span>
                   </div>
                   <span className="text-foreground opacity-50">-</span>
                   <div className="flex items-center gap-2">
                     <TrendingDown className="w-8 h-8 text-secondary" />
-                    <span className="text-secondary">${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)}</span>
+                    <span className="text-secondary">${Array.isArray(transactions) ? transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0) : 0}</span>
                   </div>
                 </div>
                 <p className="text-center text-sm text-foreground opacity-70 mt-2">Total Balance</p>
@@ -192,7 +281,7 @@ export default function TransactionsPage() {
           <CardSpotlight className="max-w-4xl mx-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Recent Transactions</h2>
-              {transactions.length === 0 ? (
+              {!Array.isArray(transactions) || transactions.length === 0 ? (
                 <div className="text-center py-12">
                   <BarChart3 className="w-16 h-16 mx-auto mb-4 text-foreground opacity-50" />
                   <p className="text-foreground text-lg opacity-70">No transactions yet. Add your first transaction above!</p>
@@ -227,5 +316,6 @@ export default function TransactionsPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

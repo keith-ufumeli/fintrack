@@ -3,36 +3,20 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import { useSession, signOut } from "next-auth/react"
+import { User, LogOut, Menu, X } from "lucide-react"
+import { DarkModeToggle } from "@/components/ui/dark-mode-toggle"
 
 export default function Header() {
-  const [isDark, setIsDark] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { data: session } = useSession()
   const router = useRouter()
 
-  useEffect(() => {
-    // Check for saved theme preference or default to light mode
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true)
-      document.documentElement.classList.add('dark')
-    }
-  }, [])
-
-  const toggleDarkMode = () => {
-    const newTheme = !isDark
-    setIsDark(newTheme)
-    
-    if (newTheme) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }
-
   const isActive = (path: string) => router.pathname === path
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" })
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -66,57 +50,131 @@ export default function Header() {
             </Link>
           </nav>
 
+          {/* User Menu */}
+          {session && (
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                {session.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                )}
+                <span className="text-sm font-medium text-foreground">
+                  {session.user?.name || session.user?.email}
+                </span>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-3"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
-            aria-label="Toggle dark mode"
-          >
-            {isDark ? (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-          </button>
+          <DarkModeToggle />
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {session && (
+              <div className="flex items-center space-x-2">
+                {session.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                )}
+              </div>
+            )}
             <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
-              aria-label="Open menu"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {isMobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden border-t">
-          <nav className="flex flex-col space-y-2 py-4">
-            <Link 
-              href="/transactions" 
-              className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md ${
-                isActive('/transactions') ? 'text-primary bg-accent' : 'text-muted-foreground'
-              }`}
-            >
-              Transactions
-            </Link>
-            <Link 
-              href="/loans" 
-              className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md ${
-                isActive('/loans') ? 'text-primary bg-accent' : 'text-muted-foreground'
-              }`}
-            >
-              Loans
-            </Link>
-          </nav>
-        </div>
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t">
+            <nav className="flex flex-col space-y-2 py-4">
+              {session && (
+                <div className="px-2 py-2 border-b border-border">
+                  <div className="flex items-center space-x-2">
+                    {session.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || "User"}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {session.user?.name || session.user?.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <Link 
+                href="/transactions" 
+                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md ${
+                  isActive('/transactions') ? 'text-primary bg-accent' : 'text-muted-foreground'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Transactions
+              </Link>
+              <Link 
+                href="/loans" 
+                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md ${
+                  isActive('/loans') ? 'text-primary bg-accent' : 'text-muted-foreground'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Loans
+              </Link>
+              {session && (
+                <button
+                  onClick={() => {
+                    handleSignOut()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md text-muted-foreground flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )
