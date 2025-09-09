@@ -1,232 +1,267 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Header from "@/components/Header";
+import { motion } from "framer-motion";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
-import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
-import { transactionFormSchema, transactionSchema, type TransactionFormData, type TransactionData } from "@/lib/validations";
+import { Mail, Github, DollarSign, ArrowRight } from "lucide-react";
+import { z } from "zod";
 
-interface Transaction {
-  _id: string;
-  type: "income" | "expense";
-  amount: number;
-  description: string;
-}
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
 
-export default function Home() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false);
   
-  const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionFormSchema),
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      type: "income",
-      amount: "",
-      description: "",
+      email: "",
     },
   });
 
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
-      .then(res => res.json())
-      .then(data => setTransactions(data));
-  }, []);
-
-  const onSubmit = async (data: TransactionFormData) => {
+  const handleEmailLogin = async (data: LoginFormData) => {
+    setIsLoading(true);
     try {
-      // Validate and transform data for API
-      const validatedData = transactionSchema.parse(data);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedData),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      form.reset();
-      // Refresh transactions
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
-        .then(res => res.json())
-        .then(data => setTransactions(data));
-      return true; // Success
+      // TODO: Implement email authentication
+      console.log("Email login:", data.email);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return true;
     } catch (error) {
-      console.error("Error submitting transaction:", error);
-      return false; // Failure
+      console.error("Email login error:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement GitHub OAuth
+      console.log("GitHub login");
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return true;
+    } catch (error) {
+      console.error("GitHub login error:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleFormSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    // Trigger form validation
     const isValid = await form.trigger();
+    if (!isValid) return false;
     
-    if (!isValid) {
-      return false; // Form validation failed
-    }
-    
-    // Get form data and submit
     const formData = form.getValues();
-    return await onSubmit(formData);
+    return await handleEmailLogin(formData);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pb-16">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Hero Section with 3D Card */}
-          <CardContainer className="inter-var">
-            <CardBody className="bg-card border-border relative group/card w-full sm:w-[30rem] h-auto rounded-lg p-6 border">
-              <CardItem
-                translateZ="50"
-                className="text-xl font-bold text-card-foreground flex items-center gap-2"
-              >
-                <DollarSign className="w-6 h-6" />
-                FinTrack Dashboard
-              </CardItem>
-              <CardItem
-                as="p"
-                translateZ="60"
-                className="text-foreground text-sm max-w-sm mt-2 opacity-70"
-              >
-                Track your income and expenses with beautiful animations and intuitive design.
-              </CardItem>
-              <CardItem translateZ="100" className="w-full mt-4">
-                <div className="text-4xl font-bold text-center flex items-center justify-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-8 h-8 text-primary" />
-                    <span className="text-primary">${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}</span>
-                  </div>
-                  <span className="text-foreground opacity-50">-</span>
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="w-8 h-8 text-secondary" />
-                    <span className="text-secondary">${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)}</span>
-                  </div>
-                </div>
-                <p className="text-center text-sm text-foreground opacity-70 mt-2">Total Balance</p>
-              </CardItem>
-            </CardBody>
-          </CardContainer>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left side - Login Form */}
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-md mx-auto lg:mx-0"
+        >
+          <div className="text-center lg:text-left mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex items-center justify-center lg:justify-start gap-3 mb-4"
+            >
+              <div className="p-2 rounded-full bg-primary/10">
+                <DollarSign className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground">FinTrack</h1>
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-foreground/70 text-lg"
+            >
+              Welcome back! Sign in to manage your finances.
+            </motion.p>
+          </div>
 
-          {/* Add Transaction Form with Spotlight Card */}
-          <CardSpotlight className="max-w-2xl mx-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Add Transaction</h2>
+          <CardSpotlight className="w-full">
+            <div className="p-8">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-2xl font-bold text-center mb-6 text-foreground"
+              >
+                Sign In
+              </motion.h2>
+
               <Form {...form}>
-                <form className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="income">Income</SelectItem>
-                              <SelectItem value="expense">Expense</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Amount</FormLabel>
-                          <FormControl>
-                            <Input
-                    type="number"
-                              placeholder="0.00"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Transaction description"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                  />
-                </div>
-                  <StatefulButton 
-                    type="button" 
-                    className="w-full"
-                    onFormSubmit={handleFormSubmit}
+                <form className="space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.5 }}
                   >
-                  Add Transaction
-                </StatefulButton>
-              </form>
-              </Form>
-            </div>
-          </CardSpotlight>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/50" />
+                              <Input
+                                type="email"
+                                placeholder="Enter your email"
+                                className="pl-10"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
 
-          {/* Recent Transactions with Spotlight Card */}
-          <CardSpotlight className="max-w-4xl mx-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Recent Transactions</h2>
-              {transactions.length === 0 ? (
-                <div className="text-center py-12">
-                  <BarChart3 className="w-16 h-16 mx-auto mb-4 text-foreground opacity-50" />
-                  <p className="text-foreground text-lg opacity-70">No transactions yet. Add your first transaction above!</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {transactions.map((t, index) => (
-                    <div 
-                      key={t._id} 
-                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card shadow-sm"
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                  >
+                    <StatefulButton
+                      type="button"
+                      className="w-full"
+                      onFormSubmit={handleFormSubmit}
+                      disabled={isLoading}
                     >
-                      <div className="flex items-center space-x-3">
-                        {t.type === "income" ? (
-                          <TrendingUp className="w-5 h-5 text-primary" />
-                        ) : (
-                          <TrendingDown className="w-5 h-5 text-secondary" />
-                        )}
-                        <div>
-                          <p className="font-medium text-card-foreground">{t.description || "No description"}</p>
-                          <p className="text-sm text-foreground opacity-70 capitalize">{t.type}</p>
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          Signing in...
                         </div>
-                      </div>
-                      <span className={`font-semibold text-lg ${t.type === "income" ? "text-primary" : "text-secondary"}`}>
-                        {t.type === "income" ? "+" : "-"}${t.amount}
-                      </span>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          Continue with Email
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
+                      )}
+                    </StatefulButton>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.7 }}
+                    className="relative"
+                  >
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-foreground/50">Or continue with</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleGitHubLogin}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          Signing in...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Github className="w-5 h-5" />
+                          Continue with GitHub
+                        </div>
+                      )}
+                    </Button>
+                  </motion.div>
+                </form>
+              </Form>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.9 }}
+                className="text-center text-sm text-foreground/60 mt-6"
+              >
+                By signing in, you agree to our{" "}
+                <a href="#" className="text-primary hover:underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="text-primary hover:underline">
+                  Privacy Policy
+                </a>
+              </motion.p>
             </div>
           </CardSpotlight>
-        </div>
-      </main>
+        </motion.div>
+
+        {/* Right side - Illustration (Desktop only) */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="hidden lg:flex items-center justify-center"
+        >
+          <div className="relative">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative z-10"
+            >
+              <img
+                src="/financial-illustration.svg"
+                alt="Financial illustration"
+                className="w-full max-w-lg h-auto"
+              />
+            </motion.div>
+            
+            {/* Floating background elements */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 0.1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.6 }}
+              className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 0.1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.8 }}
+              className="absolute inset-0 bg-secondary/20 rounded-full blur-3xl -translate-x-8 -translate-y-8"
+            />
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

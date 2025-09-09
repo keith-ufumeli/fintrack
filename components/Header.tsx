@@ -49,9 +49,9 @@ export default function Header() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link 
-              href="/" 
+              href="/transactions" 
               className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/') ? 'text-primary' : 'text-muted-foreground'
+                isActive('/transactions') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               Transactions
@@ -100,9 +100,9 @@ export default function Header() {
         <div className="md:hidden border-t">
           <nav className="flex flex-col space-y-2 py-4">
             <Link 
-              href="/" 
+              href="/transactions" 
               className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md ${
-                isActive('/') ? 'text-primary bg-accent' : 'text-muted-foreground'
+                isActive('/transactions') ? 'text-primary bg-accent' : 'text-muted-foreground'
               }`}
             >
               Transactions
