@@ -1,0 +1,333 @@
+---
+description: Form validation conventions using React Hook Form and Zod
+globs: **/*form*.tsx,**/*Form*.tsx,pages/**/*.tsx
+alwaysApply: true
+---
+
+# Form Validation Conventions
+
+This document outlines the conventions and patterns for implementing form validation using React Hook Form and Zod in the fintrack project.
+
+## Validation Schema Structure
+
+### Schema Organization
+Create separate schemas for form input and API submission:
+
+```typescript
+// Form input schema (string values)
+export const transactionFormSchema = z.object({
+  type: z.enum(["income", "expense"], {
+    message: "Please select a transaction type",
+  }),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Amount must be a positive number",
+    }),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(100, "Description must be less than 100 characters")
+    .trim(),
+})
+
+// API submission schema (transformed values)
+export const transactionSchema = transactionFormSchema.extend({
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Amount must be a positive number",
+    })
+    .transform((val) => Number(val)),
+})
+```
+
+### Type Definitions
+```typescript
+// Separate types for form and API data
+export type TransactionFormData = z.infer<typeof transactionFormSchema>
+export type TransactionData = z.infer<typeof transactionSchema>
+```
+
+## Form Implementation Patterns
+
+### Import Organization
+```typescript
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { formSchema, apiSchema, type FormData, type ApiData } from "@/lib/validations"
+```
+
+### Form Setup
+```typescript
+const form = useForm<FormData>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    field1: "",
+    field2: "default",
+    field3: "",
+  },
+})
+```
+
+### Form Submission Handler
+```typescript
+const onSubmit = async (data: FormData) => {
+  try {
+    // Validate and transform data for API
+    const validatedData = apiSchema.parse(data)
+    
+    await fetch("/api/endpoint", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validatedData),
+    })
+    
+    form.reset()
+    // Handle success (refresh data, show notification, etc.)
+  } catch (error) {
+    console.error("Error submitting form:", error)
+    // Handle error (show notification, etc.)
+  }
+}
+```
+
+## Form Field Patterns
+
+### Text Input Fields
+```typescript
+<FormField
+  control={form.control}
+  name="fieldName"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Field Label</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="Placeholder text"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+### Number Input Fields
+```typescript
+<FormField
+  control={form.control}
+  name="amount"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Amount</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          placeholder="0.00"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+### Select Fields
+```typescript
+<FormField
+  control={form.control}
+  name="type"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Type</FormLabel>
+      <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          <SelectItem value="option1">Option 1</SelectItem>
+          <SelectItem value="option2">Option 2</SelectItem>
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+### Optional Fields
+```typescript
+<FormField
+  control={form.control}
+  name="description"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Description (optional)</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="Description"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+## Form Structure
+
+### Complete Form Example
+```typescript
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Form fields */}
+    </div>
+    <Button type="submit" className="w-full">
+      Submit
+    </Button>
+  </form>
+</Form>
+```
+
+## Validation Rules
+
+### Common Validation Patterns
+```typescript
+// Required string with length limits
+z.string()
+  .min(1, "Field is required")
+  .max(100, "Must be less than 100 characters")
+  .trim()
+
+// Positive number validation
+z.string()
+  .min(1, "Amount is required")
+  .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+    message: "Amount must be a positive number",
+  })
+
+// Email validation
+z.string()
+  .min(1, "Email is required")
+  .email("Invalid email address")
+
+// Optional field
+z.string()
+  .max(200, "Must be less than 200 characters")
+  .trim()
+  .optional()
+  .or(z.literal(""))
+
+// Enum validation
+z.enum(["option1", "option2"], {
+  message: "Please select a valid option",
+})
+```
+
+### Custom Validation
+```typescript
+// Custom validation with refine
+z.string()
+  .refine((val) => val.length >= 8, {
+    message: "Password must be at least 8 characters",
+  })
+  .refine((val) => /[A-Z]/.test(val), {
+    message: "Password must contain at least one uppercase letter",
+  })
+
+// Conditional validation
+z.object({
+  type: z.enum(["personal", "business"]),
+  businessName: z.string().optional(),
+}).refine((data) => {
+  if (data.type === "business") {
+    return data.businessName && data.businessName.length > 0
+  }
+  return true
+}, {
+  message: "Business name is required for business accounts",
+  path: ["businessName"],
+})
+```
+
+## Error Handling
+
+### Form-Level Error Handling
+```typescript
+const onSubmit = async (data: FormData) => {
+  try {
+    const validatedData = apiSchema.parse(data)
+    // Submit data
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle validation errors
+      error.errors.forEach((err) => {
+        form.setError(err.path.join(".") as any, {
+          message: err.message,
+        })
+      })
+    } else {
+      // Handle other errors
+      console.error("Submission error:", error)
+    }
+  }
+}
+```
+
+### Field-Level Error Display
+```typescript
+// FormMessage automatically displays field errors
+<FormMessage />
+
+// Custom error display
+{form.formState.errors.fieldName && (
+  <p className="text-sm text-destructive">
+    {form.formState.errors.fieldName.message}
+  </p>
+)}
+```
+
+## Best Practices
+
+### Schema Design
+- Keep form schemas simple with string values
+- Use transform for API schemas to convert types
+- Provide clear, user-friendly error messages
+- Use consistent validation patterns across forms
+
+### Form Implementation
+- Always use FormProvider for form context
+- Include proper labels for accessibility
+- Use FormMessage for consistent error display
+- Implement proper loading states during submission
+
+### Performance
+- Use React.memo for form components if needed
+- Avoid unnecessary re-renders with proper dependency arrays
+- Use form.reset() to clear form after successful submission
+
+### Accessibility
+- Include proper FormLabel components
+- Use FormControl for proper ARIA attributes
+- Ensure keyboard navigation works correctly
+- Provide clear error messages
+
+### Type Safety
+- Use proper TypeScript types for form data
+- Separate form types from API types
+- Use zodResolver for type-safe validation
+- Leverage z.infer for automatic type generation
+
+This convention ensures consistent, accessible, and maintainable form validation throughout the project.

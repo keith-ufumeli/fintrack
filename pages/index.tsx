@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Header from "@/components/Header";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { transactionFormSchema, transactionSchema, type TransactionFormData, type TransactionData } from "@/lib/validations";
 
 interface Transaction {
   _id: string;
@@ -14,7 +20,15 @@ interface Transaction {
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [form, setForm] = useState({ type: "income", amount: "", description: "" });
+  
+  const form = useForm<TransactionFormData>({
+    resolver: zodResolver(transactionFormSchema),
+    defaultValues: {
+      type: "income",
+      amount: "",
+      description: "",
+    },
+  });
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
@@ -22,15 +36,23 @@ export default function Home() {
       .then(data => setTransactions(data));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setForm({ type: "income", amount: "", description: "" });
-    location.reload();
+  const onSubmit = async (data: TransactionFormData) => {
+    try {
+      // Validate and transform data for API
+      const validatedData = transactionSchema.parse(data);
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validatedData),
+      });
+      form.reset();
+      // Refresh transactions
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`)
+        .then(res => res.json())
+        .then(data => setTransactions(data));
+    } catch (error) {
+      console.error("Error submitting transaction:", error);
+    }
   };
 
   return (
@@ -76,37 +98,69 @@ export default function Home() {
           <CardSpotlight className="max-w-2xl mx-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-6 text-center">Add Transaction</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    title="Transaction type"
-                  >
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                  </select>
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    value={form.amount}
-                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2 lg:col-span-1"
-                  />
-                </div>
-                <StatefulButton className="w-full">
-                  Add Transaction
-                </StatefulButton>
-              </form>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="income">Income</SelectItem>
+                              <SelectItem value="expense">Expense</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Transaction description"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <StatefulButton type="submit" className="w-full">
+                    Add Transaction
+                  </StatefulButton>
+                </form>
+              </Form>
             </div>
           </CardSpotlight>
 

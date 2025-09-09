@@ -1,15 +1,20 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/Header"
 import { CardSpotlight } from "@/components/ui/card-spotlight"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 import { Button as StatefulButton } from "@/components/ui/stateful-button"
 import { CreditCard, HandCoins, TrendingUp, TrendingDown, Receipt } from "lucide-react"
+import { loanFormSchema, loanSchema, type LoanFormData, type LoanData } from "@/lib/validations"
 
 type Loan = {
   _id: string
@@ -23,7 +28,16 @@ type Loan = {
 
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([])
-  const [form, setForm] = useState({ person: "", amount: "", type: "lend", description: "" })
+  
+  const form = useForm<LoanFormData>({
+    resolver: zodResolver(loanFormSchema),
+    defaultValues: {
+      person: "",
+      amount: "",
+      type: "lend",
+      description: "",
+    },
+  })
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`)
@@ -31,15 +45,21 @@ export default function LoansPage() {
       .then(setLoans)
   }, [])
 
-  const handleSubmit = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, amount: Number(form.amount) }),
-    })
-    const newLoan = await res.json()
-    setLoans([newLoan, ...loans])
-    setForm({ person: "", amount: "", type: "lend", description: "" })
+  const onSubmit = async (data: LoanFormData) => {
+    try {
+      // Validate and transform data for API
+      const validatedData = loanSchema.parse(data)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validatedData),
+      })
+      const newLoan = await res.json()
+      setLoans([newLoan, ...loans])
+      form.reset()
+    } catch (error) {
+      console.error("Error submitting loan:", error)
+    }
   }
 
   return (
@@ -89,37 +109,85 @@ export default function LoansPage() {
           <CardSpotlight className="max-w-2xl mx-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-6 text-center">Add Loan / Borrow Record</h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Input 
-                    placeholder="Person" 
-                    value={form.person} 
-                    onChange={e => setForm({ ...form, person: e.target.value })} 
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="person"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Person</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Person name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="lend">Lend</SelectItem>
+                              <SelectItem value="borrow">Borrow</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Description"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input 
-                    placeholder="Amount" 
-                    type="number" 
-                    value={form.amount} 
-                    onChange={e => setForm({ ...form, amount: e.target.value })} 
-                  />
-                  <select 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground" 
-                    value={form.type} 
-                    onChange={e => setForm({ ...form, type: e.target.value as "lend" | "borrow" })}
-                  >
-                    <option value="lend" className="bg-background text-foreground">Lend</option>
-                    <option value="borrow" className="bg-background text-foreground">Borrow</option>
-                  </select>
-                </div>
-                <Input 
-                  placeholder="Description (optional)" 
-                  value={form.description} 
-                  onChange={e => setForm({ ...form, description: e.target.value })} 
-                />
-                <StatefulButton className="w-full" onClick={handleSubmit}>
-                  Save Record
-                </StatefulButton>
-              </div>
+                  <StatefulButton type="submit" className="w-full">
+                    Save Record
+                  </StatefulButton>
+                </form>
+              </Form>
             </div>
           </CardSpotlight>
 
