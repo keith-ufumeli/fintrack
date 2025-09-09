@@ -41,8 +41,8 @@ export default function Home() {
       // Validate and transform data for API
       const validatedData = transactionSchema.parse(data);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validatedData),
       });
       
@@ -82,10 +82,10 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
-            <CardBody className="bg-card border-border relative group/card hover:shadow-md w-full sm:w-[30rem] h-auto rounded-lg p-6 border transition-all duration-300">
+            <CardBody className="bg-card border-border relative group/card w-full sm:w-[30rem] h-auto rounded-lg p-6 border">
               <CardItem
                 translateZ="50"
-                className="text-xl font-bold text-foreground flex items-center gap-2"
+                className="text-xl font-bold text-card-foreground flex items-center gap-2"
               >
                 <DollarSign className="w-6 h-6" />
                 FinTrack Dashboard
@@ -93,23 +93,23 @@ export default function Home() {
               <CardItem
                 as="p"
                 translateZ="60"
-                className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+                className="text-foreground text-sm max-w-sm mt-2 opacity-70"
               >
                 Track your income and expenses with beautiful animations and intuitive design.
               </CardItem>
               <CardItem translateZ="100" className="w-full mt-4">
                 <div className="text-4xl font-bold text-center flex items-center justify-center gap-4">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-8 h-8 text-green-600" />
-                    <span className="text-green-600">${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}</span>
+                    <TrendingUp className="w-8 h-8 text-primary" />
+                    <span className="text-primary">${transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)}</span>
                   </div>
-                  <span className="text-gray-400">-</span>
+                  <span className="text-foreground opacity-50">-</span>
                   <div className="flex items-center gap-2">
-                    <TrendingDown className="w-8 h-8 text-red-600" />
-                    <span className="text-red-600">${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)}</span>
+                    <TrendingDown className="w-8 h-8 text-secondary" />
+                    <span className="text-secondary">${transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)}</span>
                   </div>
                 </div>
-                <p className="text-center text-sm text-gray-500 mt-2">Total Balance</p>
+                <p className="text-center text-sm text-foreground opacity-70 mt-2">Total Balance</p>
               </CardItem>
             </CardBody>
           </CardContainer>
@@ -117,10 +117,10 @@ export default function Home() {
           {/* Add Transaction Form with Spotlight Card */}
           <CardSpotlight className="max-w-2xl mx-auto">
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6 text-center">Add Transaction</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Add Transaction</h2>
               <Form {...form}>
                 <form className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="type"
@@ -150,7 +150,7 @@ export default function Home() {
                           <FormLabel>Amount</FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
+                    type="number"
                               placeholder="0.00"
                               {...field}
                             />
@@ -174,16 +174,16 @@ export default function Home() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                  </div>
+                  />
+                </div>
                   <StatefulButton 
                     type="button" 
                     className="w-full"
                     onFormSubmit={handleFormSubmit}
                   >
-                    Add Transaction
-                  </StatefulButton>
-                </form>
+                  Add Transaction
+                </StatefulButton>
+              </form>
               </Form>
             </div>
           </CardSpotlight>
@@ -191,32 +191,32 @@ export default function Home() {
           {/* Recent Transactions with Spotlight Card */}
           <CardSpotlight className="max-w-4xl mx-auto">
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6 text-center">Recent Transactions</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Recent Transactions</h2>
               {transactions.length === 0 ? (
                 <div className="text-center py-12">
-                  <BarChart3 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground text-lg">No transactions yet. Add your first transaction above!</p>
+                  <BarChart3 className="w-16 h-16 mx-auto mb-4 text-foreground opacity-50" />
+                  <p className="text-foreground text-lg opacity-70">No transactions yet. Add your first transaction above!</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {transactions.map((t, index) => (
                     <div 
                       key={t._id} 
-                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card hover:bg-accent/5 transition-colors shadow-sm"
+                      className="flex justify-between items-center p-4 rounded-lg border border-border bg-card shadow-sm"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <div className="flex items-center space-x-3">
                         {t.type === "income" ? (
-                          <TrendingUp className="w-5 h-5 text-green-500" />
+                          <TrendingUp className="w-5 h-5 text-primary" />
                         ) : (
-                          <TrendingDown className="w-5 h-5 text-red-500" />
+                          <TrendingDown className="w-5 h-5 text-secondary" />
                         )}
                         <div>
-                          <p className="font-medium text-foreground">{t.description || "No description"}</p>
-                          <p className="text-sm text-muted-foreground capitalize">{t.type}</p>
+                          <p className="font-medium text-card-foreground">{t.description || "No description"}</p>
+                          <p className="text-sm text-foreground opacity-70 capitalize">{t.type}</p>
                         </div>
                       </div>
-                      <span className={`font-semibold text-lg ${t.type === "income" ? "text-green-600" : "text-red-600"}`}>
+                      <span className={`font-semibold text-lg ${t.type === "income" ? "text-primary" : "text-secondary"}`}>
                         {t.type === "income" ? "+" : "-"}${t.amount}
                       </span>
                     </div>

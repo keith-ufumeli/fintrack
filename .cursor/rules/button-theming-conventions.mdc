@@ -1,0 +1,295 @@
+---
+description: Button theming and animation conventions for the bubblegum theme
+globs: components/ui/button*.tsx,**/*button*.tsx
+alwaysApply: true
+---
+
+# Button Theming & Animation Conventions
+
+This document outlines the conventions for button theming, animations, and accessibility in the fintrack project using the bubblegum theme.
+
+## Bubblegum Theme Colors
+
+### Primary Color Palette
+```css
+/* Light theme */
+--custom-primary: #fbe2a7;                          /* Main button color */
+--custom-primary-foreground: #12242e;               /* Button text color */
+--custom-secondary: #e4a2b1;                        /* Secondary actions */
+--custom-secondary-foreground: #12242e;             /* Secondary text color */
+--custom-accent: #c67b96;                           /* Hover/success states */
+--custom-accent-foreground: #f3e3ea;                /* Accent text color */
+--custom-text: #12242e;                             /* General text color */
+--custom-bg: #f3e3ea;                               /* Background */
+--custom-card: #ffffff;                             /* Card background */
+--custom-card-foreground: #12242e;                  /* Card text color */
+--custom-border: #e4a2b1;                           /* Border color */
+--custom-input: #f3e3ea;                            /* Input background */
+--custom-ring: #50afb6;                             /* Focus ring color */
+
+/* Dark theme */
+--custom-primary: #fbe2a7;                          /* Main button color */
+--custom-primary-foreground: #12242e;               /* Button text color */
+--custom-secondary: #e4a2b1;                        /* Secondary actions */
+--custom-secondary-foreground: #12242e;             /* Secondary text color */
+--custom-accent: #c67b96;                           /* Hover/success states */
+--custom-accent-foreground: #f3e3ea;                /* Accent text color */
+--custom-text: #f3e3ea;                             /* General text color */
+--custom-bg: #1c2e38;                               /* Background */
+--custom-card: #1c2e38;                             /* Card background */
+--custom-card-foreground: #f3e3ea;                  /* Card text color */
+--custom-border: #324859;                           /* Border color */
+--custom-input: #20333d;                            /* Input background */
+--custom-ring: #50afb6;                             /* Focus ring color */
+```
+
+## Button Styling Patterns
+
+### Base Button Styling
+```typescript
+className={cn(
+  "flex min-w-[120px] items-center justify-center gap-2 rounded-full px-4 py-2 font-medium ring-offset-2 transition-all duration-300 ease-in-out",
+  // Bubblegum theme colors
+  "bg-[var(--custom-primary)] text-[var(--custom-primary-foreground)]",
+  "hover:bg-[var(--custom-accent)] hover:text-[var(--custom-accent-foreground)]",
+  "ring-[var(--custom-primary)] hover:ring-2",
+  "dark:ring-offset-black",
+  // Accessibility
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--custom-primary)] focus-visible:ring-offset-2",
+)}
+```
+
+### State-Specific Styling
+```typescript
+// Error state
+hasError && "bg-[var(--destructive)] text-[var(--destructive-foreground)] ring-[var(--destructive)]"
+
+// Disabled state
+isSubmitting ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+
+// Loading state
+"transition-all duration-300 ease-in-out"
+```
+
+## Animation Patterns
+
+### Shake Animation for Errors
+```typescript
+const animateError = async () => {
+  // Shake animation
+  await animate(
+    scope.current,
+    {
+      x: [-2, 2, -2, 2, -1, 1, 0],
+    },
+    {
+      duration: 0.4,
+      ease: "easeInOut",
+    },
+  );
+  
+  // Color change to error state
+  setHasError(true);
+  
+  // Show error icon
+  await animate(".error", {
+    width: "20px",
+    scale: 1,
+    display: "block",
+  }, { duration: 0.2 });
+  
+  // Reset after delay
+  setTimeout(() => {
+    setHasError(false);
+    // Reset color
+    animate(scope.current, {
+      backgroundColor: "var(--custom-primary)",
+    }, { duration: 0.3 });
+  }, 2000);
+};
+```
+
+### Success Animation
+```typescript
+const animateSuccess = async () => {
+  // Brief success color flash
+  await animate(scope.current, {
+    backgroundColor: "var(--custom-accent)",
+    color: "var(--custom-accent-foreground)",
+  }, { duration: 0.1 });
+  
+  // Show success icon
+  await animate(".check", {
+    width: "20px",
+    scale: 1,
+    display: "block",
+  }, { duration: 0.2 });
+  
+  // Reset to original color
+  await animate(scope.current, {
+    backgroundColor: "var(--custom-primary)",
+    color: "var(--custom-primary-foreground)",
+  }, { duration: 0.3 });
+};
+```
+
+### Loading Animation
+```typescript
+const animateLoading = async () => {
+  await animate(".loader", {
+    width: "20px",
+    scale: 1,
+    display: "block",
+  }, { duration: 0.2 });
+};
+```
+
+## Accessibility Conventions
+
+### ARIA Attributes
+```typescript
+<motion.button
+  aria-live="polite"
+  aria-label={hasError ? "Form validation error" : isSubmitting ? "Submitting form" : "Submit form"}
+  disabled={isSubmitting}
+>
+```
+
+### Focus Management
+```typescript
+// Focus-visible styles
+"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--custom-primary)] focus-visible:ring-offset-2"
+
+// Keyboard navigation
+"transition-all duration-300 ease-in-out"
+```
+
+### Screen Reader Support
+```typescript
+// Dynamic aria-label based on state
+aria-label={
+  hasError ? "Form validation error" : 
+  isSubmitting ? "Submitting form" : 
+  "Submit form"
+}
+
+// Live region for state changes
+aria-live="polite"
+```
+
+## Form Integration Patterns
+
+### StatefulButton with Form Validation
+```typescript
+const handleFormSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  // Trigger form validation
+  const isValid = await form.trigger();
+  
+  if (!isValid) {
+    return false; // Triggers error animation
+  }
+  
+  // Submit form data
+  const formData = form.getValues();
+  return await onSubmit(formData);
+};
+
+// Usage
+<StatefulButton 
+  type="button" 
+  onFormSubmit={handleFormSubmit}
+  className="w-full"
+>
+  Submit Form
+</StatefulButton>
+```
+
+### Error Handling Flow
+```typescript
+const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  if (isSubmitting) return;
+  
+  setIsSubmitting(true);
+  await animateLoading();
+  
+  try {
+    let success = true;
+    
+    if (onFormSubmit) {
+      success = await onFormSubmit(event);
+    } else {
+      await props.onClick?.(event);
+    }
+    
+    if (success) {
+      await animateSuccess();
+    } else {
+      await animateError();
+    }
+  } catch (error) {
+    await animateError();
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+```
+
+## Color Usage Guidelines
+
+### Primary Actions
+- **Background**: `var(--custom-primary)`
+- **Hover**: `var(--custom-accent)`
+- **Focus**: `var(--custom-primary)` with ring
+- **Success**: Brief flash to `var(--custom-accent)`
+
+### Error States
+- **Background**: `var(--destructive)`
+- **Ring**: `var(--destructive)`
+- **Animation**: Shake + color change + error icon
+
+### Disabled States
+- **Opacity**: `0.7`
+- **Cursor**: `not-allowed`
+- **Interaction**: Prevented during submission
+
+## Animation Timing
+
+### Standard Durations
+- **Shake**: 0.4s with easeInOut
+- **Color transitions**: 0.3s
+- **Icon animations**: 0.2s
+- **Success flash**: 0.1s
+- **Error display**: 1.5s delay before reset
+
+### Easing Functions
+- **Shake**: `easeInOut`
+- **Color changes**: `easeInOut`
+- **Icon scaling**: `easeInOut`
+
+## Best Practices
+
+### Performance
+- Use `useAnimate` for complex animations
+- Debounce rapid clicks with `isSubmitting` state
+- Clean up timeouts in useEffect cleanup
+
+### User Experience
+- Provide immediate feedback on validation errors
+- Show loading state during submission
+- Use subtle animations that don't distract
+- Ensure animations are accessible and don't cause motion sickness
+
+### Consistency
+- Use consistent animation timings across all buttons
+- Maintain the same color palette throughout the app
+- Follow the same error handling patterns
+- Use consistent accessibility attributes
+
+### Accessibility
+- Provide clear visual feedback for all states
+- Use appropriate ARIA attributes
+- Ensure keyboard navigation works correctly
+- Test with screen readers
+- Respect user's motion preferences
+
+This convention ensures consistent, accessible, and visually appealing button interactions throughout the application while maintaining the bubblegum theme aesthetic.

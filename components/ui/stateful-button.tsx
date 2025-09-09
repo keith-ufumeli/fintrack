@@ -12,6 +12,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = ({ className, children, onFormSubmit, ...props }: ButtonProps) => {
   const [scope, animate] = useAnimate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const animateLoading = async () => {
     await animate(
@@ -28,6 +29,18 @@ export const Button = ({ className, children, onFormSubmit, ...props }: ButtonPr
   };
 
   const animateSuccess = async () => {
+    // Brief success color flash
+    await animate(
+      scope.current,
+      {
+        backgroundColor: "var(--accent)",
+        color: "var(--accent-foreground)",
+      },
+      {
+        duration: 0.1,
+      },
+    );
+    
     await animate(
       ".loader",
       {
@@ -59,13 +72,41 @@ export const Button = ({ className, children, onFormSubmit, ...props }: ButtonPr
         display: "none",
       },
       {
-        delay: 2,
+        delay: 1.5,
         duration: 0.2,
+      },
+    );
+    
+    // Reset to original color
+    await animate(
+      scope.current,
+      {
+        backgroundColor: "var(--primary)",
+        color: "var(--primary-foreground)",
+      },
+      {
+        duration: 0.3,
       },
     );
   };
 
   const animateError = async () => {
+    // Set error state for styling
+    setHasError(true);
+    
+    // Shake animation
+    await animate(
+      scope.current,
+      {
+        x: [-2, 2, -2, 2, -1, 1, 0],
+      },
+      {
+        duration: 0.4,
+        ease: "easeInOut",
+      },
+    );
+
+    // Show error icon
     await animate(
       ".loader",
       {
@@ -89,6 +130,7 @@ export const Button = ({ className, children, onFormSubmit, ...props }: ButtonPr
       },
     );
 
+    // Hide error icon and reset error state
     await animate(
       ".error",
       {
@@ -97,10 +139,26 @@ export const Button = ({ className, children, onFormSubmit, ...props }: ButtonPr
         display: "none",
       },
       {
-        delay: 2,
+        delay: 1.5,
         duration: 0.2,
       },
     );
+    
+    // Reset error state and color after animation
+    setTimeout(async () => {
+      setHasError(false);
+      // Reset to original color
+      await animate(
+        scope.current,
+        {
+          backgroundColor: "var(--primary)",
+          color: "var(--primary-foreground)",
+        },
+        {
+          duration: 0.3,
+        },
+      );
+    }, 2000);
   };
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -147,12 +205,24 @@ export const Button = ({ className, children, onFormSubmit, ...props }: ButtonPr
       ref={scope}
       disabled={isSubmitting}
       className={cn(
-        "flex min-w-[120px] items-center justify-center gap-2 rounded-full bg-green-500 px-4 py-2 font-medium text-white ring-offset-2 transition duration-200 hover:ring-2 hover:ring-green-500 dark:ring-offset-black",
+        "flex min-w-[120px] items-center justify-center gap-2 rounded-full px-4 py-2 font-medium ring-offset-2 transition-all duration-300 ease-in-out",
+        // Theme colors
+        "bg-primary text-primary-foreground",
+        "hover:bg-accent hover:text-accent-foreground",
+        "ring-primary hover:ring-2",
+        "dark:ring-offset-black",
+        // Error state styling
+        hasError && "bg-destructive text-destructive-foreground ring-destructive",
+        // Disabled state
         isSubmitting ? "cursor-not-allowed opacity-70" : "cursor-pointer",
+        // Accessibility
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         className,
       )}
       {...buttonProps}
       onClick={handleClick}
+      aria-live="polite"
+      aria-label={hasError ? "Form validation error" : isSubmitting ? "Submitting form" : "Submit form"}
     >
       <motion.div layout className="flex items-center gap-2">
         <Loader />
@@ -193,7 +263,7 @@ const Loader = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="loader text-white"
+      className="loader text-primary-foreground"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 3a9 9 0 1 0 9 9" />
@@ -222,7 +292,7 @@ const CheckIcon = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="check text-white"
+      className="check text-primary-foreground"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
@@ -252,7 +322,7 @@ const ErrorIcon = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="error text-white"
+      className="error text-destructive-foreground"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />

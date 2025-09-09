@@ -49,18 +49,18 @@ export default function LoansPage() {
     try {
       // Validate and transform data for API
       const validatedData = loanSchema.parse(data)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/loans`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validatedData),
-      })
+    })
       
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`)
       }
       
-      const newLoan = await res.json()
-      setLoans([newLoan, ...loans])
+    const newLoan = await res.json()
+    setLoans([newLoan, ...loans])
       form.reset()
       return true // Success
     } catch (error) {
@@ -89,10 +89,10 @@ export default function LoansPage() {
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Hero Section with 3D Card */}
           <CardContainer className="inter-var">
-            <CardBody className="bg-card border-border relative group/card hover:shadow-md w-full sm:w-[30rem] h-auto rounded-lg p-6 border transition-all duration-300">
+            <CardBody className="bg-card border-border relative group/card w-full sm:w-[30rem] h-auto rounded-lg p-6 border">
               <CardItem
                 translateZ="50"
-                className="text-xl font-bold text-foreground flex items-center gap-2"
+                className="text-xl font-bold text-card-foreground flex items-center gap-2"
               >
                 <CreditCard className="w-6 h-6" />
                 Loans & Borrowing
@@ -100,25 +100,25 @@ export default function LoansPage() {
               <CardItem
                 as="p"
                 translateZ="60"
-                className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+                className="text-foreground text-sm max-w-sm mt-2 opacity-70"
               >
                 Track money you've lent to others and money you've borrowed with detailed records.
               </CardItem>
               <CardItem translateZ="100" className="w-full mt-4">
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="flex flex-col items-center">
-                    <TrendingUp className="w-6 h-6 text-blue-600 mb-1" />
-                    <div className="text-2xl font-bold text-blue-600">
+                    <TrendingUp className="w-6 h-6 text-primary mb-1" />
+                    <div className="text-2xl font-bold text-primary">
                       ${loans.filter(l => l.type === 'lend').reduce((sum, l) => sum + l.amount, 0)}
                     </div>
-                    <p className="text-xs text-gray-500">Lent Out</p>
+                    <p className="text-xs text-foreground opacity-70">Lent Out</p>
                   </div>
                   <div className="flex flex-col items-center">
-                    <TrendingDown className="w-6 h-6 text-orange-600 mb-1" />
-                    <div className="text-2xl font-bold text-orange-600">
+                    <TrendingDown className="w-6 h-6 text-secondary mb-1" />
+                    <div className="text-2xl font-bold text-secondary">
                       ${loans.filter(l => l.type === 'borrow').reduce((sum, l) => sum + l.amount, 0)}
                     </div>
-                    <p className="text-xs text-gray-500">Borrowed</p>
+                    <p className="text-xs text-foreground opacity-70">Borrowed</p>
                   </div>
                 </div>
               </CardItem>
@@ -128,10 +128,10 @@ export default function LoansPage() {
           {/* Add Loan Form with Spotlight Card */}
           <CardSpotlight className="max-w-2xl mx-auto">
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6 text-center">Add Loan / Borrow Record</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Add Loan / Borrow Record</h2>
               <Form {...form}>
                 <form className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="person"
@@ -139,7 +139,7 @@ export default function LoansPage() {
                         <FormItem>
                           <FormLabel>Person</FormLabel>
                           <FormControl>
-                            <Input
+                  <Input 
                               placeholder="Person name"
                               {...field}
                             />
@@ -155,8 +155,8 @@ export default function LoansPage() {
                         <FormItem>
                           <FormLabel>Amount</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
+                  <Input 
+                    type="number" 
                               placeholder="0.00"
                               {...field}
                             />
@@ -208,8 +208,8 @@ export default function LoansPage() {
                     className="w-full"
                     onFormSubmit={handleFormSubmit}
                   >
-                    Save Record
-                  </StatefulButton>
+                  Save Record
+                </StatefulButton>
                 </form>
               </Form>
             </div>
@@ -247,8 +247,8 @@ function LoanTable({ loans }: { loans: Loan[] }) {
   if (loans.length === 0) {
     return (
       <div className="text-center py-12">
-        <HandCoins className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-muted-foreground text-lg">No loan records yet. Add your first record above!</p>
+        <HandCoins className="w-16 h-16 mx-auto mb-4 text-foreground opacity-50" />
+        <p className="text-foreground text-lg opacity-70">No loan records yet. Add your first record above!</p>
       </div>
     )
   }
@@ -258,31 +258,31 @@ function LoanTable({ loans }: { loans: Loan[] }) {
       {loans.map((loan, index) => (
         <div 
           key={loan._id} 
-          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent/5 transition-colors shadow-sm"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card shadow-sm"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className="flex items-center space-x-3 mb-2 sm:mb-0">
             {loan.type === "lend" ? (
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-primary" />
             ) : (
-              <TrendingDown className="w-5 h-5 text-orange-500" />
+              <TrendingDown className="w-5 h-5 text-secondary" />
             )}
             <div>
-              <p className="font-medium text-foreground">{loan.person}</p>
-              <p className="text-sm text-muted-foreground capitalize">{loan.type}</p>
+              <p className="font-medium text-card-foreground">{loan.person}</p>
+              <p className="text-sm text-foreground opacity-70 capitalize">{loan.type}</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
-            <span className="font-semibold text-lg text-foreground">${loan.amount}</span>
+            <span className="font-semibold text-lg text-card-foreground">${loan.amount}</span>
             <div className="flex items-center space-x-2">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 loan.status === 'paid' 
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  ? 'bg-primary/20 text-primary' 
+                  : 'bg-secondary/20 text-secondary'
               }`}>
                 {loan.status}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-foreground opacity-70">
                 {new Date(loan.date).toLocaleDateString()}
               </span>
             </div>
